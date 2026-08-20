@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- html2pdf.js for premium PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Custom Style Sheet -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <style>
+        body { display: none; }
+        
+        /* Profile Dropdown Styling */
+        .profile-container {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: auto;
+            min-width: 280px;
+            max-width: 320px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform-origin: top right;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .profile-dropdown.hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+        }
+        .dropdown-header {
+            display: flex;
+            flex-direction: column;
+        }
+        .dropdown-user-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .dropdown-user-role {
+            font-size: 11px;
+            color: #38bdf8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 4px 0;
+        }
+        .dropdown-info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .dropdown-info-item span {
+            word-break: break-all;
+            white-space: normal;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .dropdown-info-item i {
+            color: #94a3b8;
+            width: 14px;
+            text-align: center;
+        }
+        .dropdown-info-item code {
+            background: rgba(255, 255, 255, 0.07);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            font-size: 11px;
+        }
+        .dropdown-logout-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 4px;
+        }
+        .dropdown-logout-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Enforce Authentication early -->
+    <script src="../main.js"></script>
+    <script>
+        enforceAuth();
+    </script>
+
+    <!-- Background Video -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+    <div class="app-container">
+        <!-- Sidebar Drawer Backdrop for Mobile -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-shield-halved brand-icon"></i>
+                <div class="brand-text">
+                    <h2>NETWORK & WEB</h2>
+                    <span>SCANNER</span>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <div class="status-header">
+                    <div class="status-info">
+                        <span class="status-label">Sentinel System State</span>
+                        <span class="status-value text-orange" id="system-status-text">IDLE / STANDBY</span>
+                    </div>
+                </div>
+                <div class="network-selector">
+                    <label for="interface-select"><i class="fa-solid fa-network-wired text-primary"></i> Monitored
+                        Interface</label>
+                    <select id="interface-select">
+                        <option value="" disabled selected>Select Interface...</option>
+                        <option value="Ethernet">Ethernet Adapter</option>
+                        <option value="WiFi">Wireless Wi-Fi Card</option>
+                        <option value="Virtual">Virtual LAN Bridge</option>
+                    </select>
+                </div>
+                <div class="network-selector hidden" id="wifi-networks-container">
+                    <label for="network-select"><i class="fa-solid fa-wifi text-purple"></i> Nearby Wi-Fi
+                        Networks</label>
+                    <select id="network-select">
+                        <option value="" disabled selected>Select Wi-Fi SSID...</option>
+                    </select>
+                </div>
+                <!-- Network Connection Details Panel (Wi-Fi details auto-display) -->
+                <div class="network-details-panel hidden" id="network-details-panel">
+                    <div class="details-header">
+                        <i class="fa-solid fa-circle-info text-primary"></i>
+                        <span>Interface Details</span>
+                    </div>
+                    <div class="details-loader hidden" id="details-loader">
+                        <div class="cyber-spinner">
+                            <div class="ring outer-ring"></div>
+                            <div class="ring inner-ring"></div>
+                            <div class="dot"></div>
+                        </div>
+                        <span>Querying Adapter Config...</span>
+                    </div>
+                    <div class="details-grid" id="details-grid">
+                        <div class="details-row">
+                            <span class="details-label">IPv4 Address</span>
+                            <span class="details-value" id="net-ipv4">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Gateway IP</span>
+                            <span class="details-value" id="net-gateway">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">DNS Server</span>
+                            <span class="details-value" id="net-dns">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">MAC Address</span>
+                            <span class="details-value" id="net-mac">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Assessment Panel -->
+                <div class="network-details-panel hidden" id="security-details-panel"
+                    style="border-top: 1px solid var(--border-glass); padding-top: 12px; margin-top: 8px;">
+                    <div class="details-header">
+                        <i class="fa-solid fa-shield-virus text-orange"></i>
+                        <span>Security Assessment</span>
+                    </div>
+                    <div class="details-grid" id="security-grid">
+                        <div class="details-row">
+                            <span class="details-label">Threat Level</span>
+                            <span class="details-value" id="net-threat-level" style="font-weight: 700;">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Vulnerability</span>
+                            <span class="details-value" id="net-vulnerability"
+                                style="font-size: 10px; font-family: var(--font-sans); text-align: right; white-space: normal; overflow-wrap: anywhere; max-width: 130px; line-height: 1.2;">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Active Threats</span>
+                            <span class="details-value" id="net-threats-present"
+                                style="font-size: 10px; font-family: var(--font-sans); text-align: right; white-space: normal; overflow-wrap: anywhere; max-width: 130px; line-height: 1.2;">--</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Active Threat Count</span>
+                            <span class="details-value" id="net-threat-count"
+                                style="font-weight: 700; color: var(--red);">0</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-stop" id="emergency-stop-btn">
+                    <i class="fa-solid fa-circle-stop"></i> Emergency Stop
+                </button>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-tab="overview">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="live-traffic">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span>Live Traffic Stream</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="threat-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Threat Logs</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="web-scanner">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Website Scanner</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="ai-performance">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>AI Model Analytics</span>
+                </a>
+                <a href="#" class="nav-item" data-tab="wifi-radar">
+                    <i class="fa-solid fa-wifi"></i>
+                    <span>Nearby Wi-Fi Radar</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="version">v1.0.1</span>
+                <span class="node-id">Node: 2845</span>
+            </div>
+        </aside>
+
+        <!-- Main Body -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="top-header">
+                <div class="header-left" style="display: flex; align-items: center; gap: 16px;">
+                    <button class="sidebar-toggle-btn" id="sidebar-toggle-btn">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div>
+                        <h1 id="page-title">Dashboard Overview</h1>
+                        <p class="subtitle" id="page-subtitle">Intrusion logs and passive system health metrics.</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="live-clock">
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="current-time">00:00:00 AM</span>
+                    </div>
+
+                    <!-- Download report button -->
+                    <button class="btn btn-secondary" id="download-report-btn" style="display: flex; align-items: center; gap: 8px; margin-right: 15px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                        <i class="fa-solid fa-download"></i> Download Report
+                    </button>
+
+                    <!-- Interactive Profile Badge Dropdown -->
+                    <div class="profile-container">
+                        <div class="profile-badge" id="profile-badge-btn" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <span class="profile-name">Operator</span>
+                            <i class="fa-solid fa-caret-down" style="font-size: 10px;"></i>
+                        </div>
+                        
+                        <div class="profile-dropdown hidden bg-glass" id="profile-dropdown-menu">
+                            <div class="dropdown-header">
+                                <span class="dropdown-user-name" id="dropdown-name">Operator</span>
+                                <span class="dropdown-user-role">Security Agent</span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-info-item">
+                                <i class="fa-solid fa-envelope"></i>
+                                <span id="dropdown-email">agent@nids.local</span>
+                            </div>
+                            <div class="dropdown-info-item">
+                                <i class="fa-solid fa-key"></i>
+                                <span>Code: <code id="dropdown-code">------</code></span>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-logout-btn" onclick="handleLogout()">
+                                <i class="fa-solid fa-power-off"></i> Logout Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area (Single Page App Tabs) -->
+            <div class="tab-content">
+
+                <!-- 1. OVERVIEW TAB -->
+                <section class="tab-pane active" id="overview">
+                    <!-- High priority alerts marquee banner -->
+                    <div class="marquee-alert-container bg-glass hidden" id="marquee-alert">
+                        <span class="badge badge-success" id="marquee-badge">SECURE</span>
+                        <div class="marquee-text">
+                            <span id="marquee-msg">No active threats detected.</span>
+                        </div>
+                        <button class="marquee-close-btn"
+                            onclick="document.getElementById('marquee-alert').classList.add('hidden')">&times;</button>
+                    </div>
+
+
+
+                    <!-- Metric Cards Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card bg-glass">
+                            <div class="metric-header">
+                                <span class="metric-title">Packets Analyzed</span>
+                                <div class="metric-icon bg-blue-dim"><i class="fa-solid fa-server text-blue"></i></div>
+                            </div>
+                            <div class="metric-value" id="stat-packets">--</div>
+                            <div class="metric-trend text-green">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                                <span id="stat-sec-rate">0 / sec rate</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card bg-glass">
+                            <div class="metric-header">
+                                <span class="metric-title">Threats Intercepted</span>
+                                <div class="metric-icon bg-red-dim"><i class="fa-solid fa-shield-virus text-red"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value text-red" id="stat-threats">--</div>
+                            <div class="metric-trend text-red" id="stat-threat-ratio-change">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span id="stat-threat-ratio">-- ratio</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card bg-glass">
+                            <div class="metric-header">
+                                <span class="metric-title">AI Model Accuracy</span>
+                                <div class="metric-icon bg-purple-dim"><i class="fa-solid fa-brain text-purple"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value text-purple" id="stat-accuracy">--</div>
+                            <div class="metric-trend text-purple">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span id="stat-f1">F1 Score: --</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-card bg-glass">
+                            <div class="metric-header">
+                                <span class="metric-title">Website Audits</span>
+                                <div class="metric-icon bg-orange-dim"><i class="fa-solid fa-globe text-orange"></i>
+                                </div>
+                            </div>
+                            <div class="metric-value text-orange" id="stat-last-web-score">--</div>
+                            <div class="metric-trend text-orange" id="stat-last-web-url">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>No scans executed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Panel Row -->
+                    <div class="charts-row">
+                        <!-- Chart 1: Bandwidth & Threat Rate -->
+                        <div class="chart-container bg-glass col-8">
+                            <div class="chart-header">
+                                <h3>Live System Activity Logs</h3>
+                                <span class="chart-desc">Throughput metrics & detected alerts volume</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="line-throughput-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Threat Distribution -->
+                        <div class="chart-container bg-glass col-4">
+                            <div class="chart-header">
+                                <h3>Threat Breakdown</h3>
+                                <span class="chart-desc">Distribution of threat categories</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="doughnut-threats-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Alerts -->
+                    <div class="card bg-glass recent-alerts-card">
+                        <div class="card-header">
+                            <h3>Active Security Alarms</h3>
+                            <span class="badge badge-warning" id="active-alert-count">0 Alarms Active</span>
+                        </div>
+                        <div class="alerts-list" id="active-alerts-list">
+                            <!-- Populated by JavaScript -->
+                            <div class="no-data">
+                                <i class="fa-solid fa-circle-check text-green"></i>
+                                <p>No security anomalies currently registered.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Sentinel Security Recommendations -->
+                    <div class="card bg-glass ai-recommendations-card" style="margin-top: 24px;">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-brain text-purple" style="margin-right: 8px;"></i> AI Sentinel
+                                Security Insights</h3>
+                            <span class="badge badge-success" id="ai-safety-status">Network Status: Optimal</span>
+                        </div>
+                        <div class="ai-recommendations-content" id="ai-recommendations-list">
+                            <!-- Dynamic Content populated by JavaScript -->
+                            <div class="ai-suggestion-item">
+                                <div class="ai-suggestion-icon"><i class="fa-solid fa-circle-check text-green"></i>
+                                </div>
+                                <div class="ai-suggestion-text">
+                                    <h4>Your network is currently safe</h4>
+                                    <p>AI NIDS is passively monitoring all packets. To maintain safety, ensure your OS
+                                        firewall is enabled and restrict open ports.</p>
+                                </div>
+                                <div class="ai-suggestion-action">
+                                    <span class="action-badge badge-neutral">No Action Required</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. LIVE TRAFFIC STREAM TAB -->
+                <section class="tab-pane" id="live-traffic">
+                    <div class="action-bar bg-glass">
+                        <div class="action-left">
+                            <button class="btn btn-primary" id="toggle-stream-btn">
+                                <i class="fa-solid fa-pause"></i> <span>Pause Live Feed</span>
+                            </button>
+                            <span class="stream-indicators">
+                                <span class="stream-label" id="stream-status-label">Streaming network packets</span>
+                            </span>
+                        </div>
+                        <div class="action-right">
+                            <span class="info-label">Packet Queue Buffer: 100/100 max</span>
+                        </div>
+                    </div>
+
+                    <!-- Packet Stream Table -->
+                    <div class="table-container bg-glass">
+                        <table class="data-table" id="packet-stream-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Source IP</th>
+                                    <th>Destination IP</th>
+                                    <th>Protocol</th>
+                                    <th>Length (B)</th>
+                                    <th>AI Threat Label</th>
+                                    <th>Confidence</th>
+                                    <th>Action Log</th>
+                                </tr>
+                            </thead>
+                            <tbody id="packet-stream-tbody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 3. THREAT LOGS TAB -->
+                <section class="tab-pane" id="threat-history">
+                    <div class="filter-panel bg-glass">
+                        <div class="filter-group">
+                            <label for="filter-search"><i class="fa-solid fa-magnifying-glass"></i> Search</label>
+                            <input type="text" id="filter-search" placeholder="IP, ID, Protocol, Threat...">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-severity"><i class="fa-solid fa-circle-exclamation"></i> Severity</label>
+                            <select id="filter-severity">
+                                <option value="ALL">All Levels</option>
+                                <option value="Safe">Safe</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                                <option value="Critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-threat"><i class="fa-solid fa-virus-slash"></i> Threat Type</label>
+                            <select id="filter-threat">
+                                <option value="ALL">All Categories</option>
+                                <option value="Normal">Normal</option>
+                                <option value="DDoS Attack">DDoS Attack</option>
+                                <option value="SQL Injection">SQL Injection</option>
+                                <option value="Port Scan">Port Scan</option>
+                                <option value="Brute Force">Brute Force</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" id="clear-filters-btn">
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+
+                    <div class="table-container bg-glass">
+                        <table class="data-table" id="threat-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Packet ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Source IP</th>
+                                    <th>Destination IP</th>
+                                    <th>Protocol</th>
+                                    <th>Threat Type</th>
+                                    <th>Severity</th>
+                                    <th>AI Confidence</th>
+                                    <th>Description Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="threat-history-tbody">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- 4. WEBSITE SCANNER TAB -->
+                <section class="tab-pane" id="web-scanner">
+                    <div class="scanner-grid">
+
+                        <!-- Scanner Left Panel (Form & Current Report) -->
+                        <div class="scanner-main col-8">
+                            <div class="card bg-glass">
+                                <div class="card-body">
+                                    <form class="scan-form" id="website-scan-form">
+                                        <div class="input-wrapper">
+
+                                            <input type="text" id="scan-url-input"
+                                                placeholder="e.g. secure-corp-service.com" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="scan-submit-btn">
+                                            <i class="fa-solid fa-magnifying-glass"></i> Run Security Scan
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </div>
+
+                            <!-- Scanning Progress Widget (Hidden by default) -->
+                            <div class="scanner-progress-card bg-glass hidden" id="scan-progress-widget">
+                                <div class="progress-details">
+                                    <div class="spinner">
+                                        <div class="cyber-spinner">
+                                            <div class="ring outer-ring"></div>
+                                            <div class="ring inner-ring"></div>
+                                            <div class="dot"></div>
+                                        </div>
+                                    </div>
+                                    <div class="progress-text-block">
+                                        <h4 id="progress-step-title">Initializing scanner module...</h4>
+                                        <p id="progress-step-desc">Resolving domain name and mapping sockets.</p>
+                                    </div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-bar-fill" id="progress-fill" style="width: 5%;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Scan Report Result Display -->
+                            <div class="scan-report bg-glass hidden" id="scan-report-container">
+                                <div class="report-header-summary">
+                                    <div class="score-badge-ring" id="report-grade-container">
+                                        <span class="score-grade" id="report-grade">A</span>
+                                        <span class="score-points" id="report-points">95/100</span>
+                                    </div>
+                                    <div class="report-meta">
+                                        <h2 id="report-url">https://secure-bank-corp.com</h2>
+                                        <div class="report-grid-info">
+                                            <div class="info-grid-cell">
+                                                <span class="cell-label">Threat Level</span>
+                                                <span class="cell-value" id="report-risk-cell">Low Risk</span>
+                                            </div>
+                                            <div class="info-grid-cell">
+                                                <span class="cell-label">Website IP</span>
+                                                <span class="cell-value text-primary" id="report-ip-cell">--</span>
+                                            </div>
+                                            <div class="info-grid-cell">
+                                                <span class="cell-label">SSL Issuer</span>
+                                                <span class="cell-value" id="report-ssl-cell">DigiCert TLS RSA</span>
+                                            </div>
+                                            <div class="info-grid-cell">
+                                                <span class="cell-label">SSL Expiry</span>
+                                                <span class="cell-value" id="report-expiry-cell">2027-02-14</span>
+                                            </div>
+                                            <div class="info-grid-cell">
+                                                <span class="cell-label">Last Audited</span>
+                                                <span class="cell-value" id="report-time-cell">2026-07-31
+                                                    01:05:00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="findings-breakdown">
+                                    <h3>Security Vulnerability Audits</h3>
+                                    <div class="findings-list" id="findings-table-list">
+                                        <!-- Javascript fills list -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scanner Right Panel (Scan History) -->
+                        <div class="scanner-sidebar col-4">
+                            <div class="card bg-glass scan-history-card">
+                                <div class="card-header">
+                                    <h3>Scan History</h3>
+                                    <span class="card-desc">Previous website security logs</span>
+                                </div>
+                                <div class="scan-history-list" id="scan-history-list">
+                                    <!-- Populated dynamically -->
+                                    <div class="no-data">
+                                        <i class="fa-solid fa-folder-open"></i>
+                                        <p>No website scans recorded yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. AI MODEL ANALYTICS TAB -->
+                <section class="tab-pane" id="ai-performance">
+                    <!-- Stats Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card bg-glass">
+                            <div class="metric-title">Accuracy Rate</div>
+                            <div class="metric-value text-purple" id="perf-accuracy">--</div>
+                            <p class="stat-desc">Correctly classified traffic out of total samples.</p>
+                        </div>
+                        <div class="metric-card bg-glass">
+                            <div class="metric-title">Precision Rate</div>
+                            <div class="metric-value text-blue" id="perf-precision">--</div>
+                            <p class="stat-desc">Proportion of alerts that were actual attacks.</p>
+                        </div>
+                        <div class="metric-card bg-glass">
+                            <div class="metric-title">Recall Rate</div>
+                            <div class="metric-value text-green" id="perf-recall">--</div>
+                            <p class="stat-desc">Proportion of actual attacks successfully caught.</p>
+                        </div>
+                        <div class="metric-card bg-glass">
+                            <div class="metric-title">F1-Score</div>
+                            <div class="metric-value text-orange" id="perf-f1">--</div>
+                            <p class="stat-desc">Harmonic mean of precision and recall rates.</p>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <!-- Chart 1: Training Loss Curve -->
+                        <div class="chart-container bg-glass col-6">
+                            <div class="chart-header">
+                                <h3>Training & Validation Convergence</h3>
+                                <span class="chart-desc">Loss and accuracy curves over 20 training epochs</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="model-training-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 2: Model ROC curves -->
+                        <div class="chart-container bg-glass col-6">
+                            <div class="chart-header">
+                                <h3>ROC Curves</h3>
+                                <span class="chart-desc">True Positive vs False Positive rates for classifier
+                                    nodes</span>
+                            </div>
+                            <div class="chart-wrapper">
+                                <canvas id="model-roc-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confusion Matrix Display -->
+                    <div class="card bg-glass matrix-card">
+                        <div class="card-header">
+                            <h3>AI Classification Confusion Matrix</h3>
+                            <span class="card-desc">Columns represent predicted labels; rows represent actual ground
+                                truth classes</span>
+                        </div>
+                        <div class="matrix-grid-wrapper">
+                            <table class="matrix-table">
+                                <thead>
+                                    <tr>
+                                        <th>Actual \ Predicted</th>
+                                        <th>Normal</th>
+                                        <th>DDoS Attack</th>
+                                        <th>SQL Injection</th>
+                                        <th>Port Scan</th>
+                                        <th>Brute Force</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="confusion-matrix-body">
+                                    <!-- Filled dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. NEARBY WIFI RADER TAB -->
+                <section class="tab-pane" id="wifi-radar">
+                    <div class="card bg-glass">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3>Nearby Wireless Hotspots & Adapters</h3>
+                                <span class="card-desc">Real-time scan logs representing local Wi-Fi signals captured by system adapters</span>
+                            </div>
+                            <button class="btn btn-primary" id="btn-refresh-radar" style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-arrows-rotate"></i> Rescan Wi-Fi
+                            </button>
+                        </div>
+                        <div class="table-container" style="margin-top: 20px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>SSID (Network Name)</th>
+                                        <th>Signal Strength</th>
+                                        <th>Authentication</th>
+                                        <th>Encryption</th>
+                                        <th>Frequency / Channel</th>
+                                        <th>Type</th>
+                                        <th>Operational Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wifi-radar-tbody">
+                                    <tr>
+                                        <td colspan="7" class="no-data">
+                                            <div class="cyber-spinner" style="margin: 20px auto 10px;">
+                                                <div class="ring outer-ring"></div>
+                                                <div class="ring inner-ring"></div>
+                                            </div>
+                                            <p>Scanning nearby wireless signals...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Load custom JavaScript controller -->
+    <script src="../static/js/app.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get user session metadata
+            const user = getSessionUser();
+            if (user) {
+                // Populate profile badges
+                const nameBadges = document.querySelectorAll(".profile-name");
+                nameBadges.forEach(el => {
+                    el.textContent = user.name;
+                });
+                
+                // Populate profile dropdown items
+                const dropdownName = document.getElementById("dropdown-name");
+                const dropdownEmail = document.getElementById("dropdown-email");
+                const dropdownCode = document.getElementById("dropdown-code");
+                
+                if (dropdownName) dropdownName.textContent = user.name;
+                if (dropdownEmail) dropdownEmail.textContent = user.email;
+                if (dropdownCode) dropdownCode.textContent = user.userCode || '------';
+            }
+            
+            // Profile dropdown toggle logic
+            const badgeBtn = document.getElementById('profile-badge-btn');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            
+            if (badgeBtn && dropdownMenu) {
+                badgeBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!badgeBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Download report logic
+            const downloadBtn = document.getElementById('download-report-btn');
+            if (downloadBtn) {
+                downloadBtn.addEventListener('click', function() {
+                    const sessionUser = getSessionUser() || { name: 'Operator', email: 'unknown@nids.local', userCode: '000000' };
+                    const timestamp = new Date().toLocaleString();
+                    
+                    // Fetch Monitored network info from DOM
+                    const ipv4 = document.getElementById('net-ipv4')?.textContent || '--';
+                    const gateway = document.getElementById('net-gateway')?.textContent || '--';
+                    const dns = document.getElementById('net-dns')?.textContent || '--';
+                    const mac = document.getElementById('net-mac')?.textContent || '--';
+                    
+                    // Fetch active network interface selection
+                    const interfaceSelect = document.getElementById('interface-select');
+                    const selectedInterface = interfaceSelect ? interfaceSelect.value : 'None';
+                    let monitoredSSID = selectedInterface;
+                    if (selectedInterface === 'WiFi') {
+                        const netSelect = document.getElementById('network-select');
+                        if (netSelect && netSelect.value) {
+                            monitoredSSID = `WiFi (${netSelect.value})`;
+                        }
+                    }
+                    
+                    // Fetch Security assessment details
+                    const threatLevel = document.getElementById('net-threat-level')?.textContent || '--';
+                    const vulnerability = document.getElementById('net-vulnerability')?.textContent || '--';
+                    const activeThreats = document.getElementById('net-threats-present')?.textContent || '--';
+                    const threatCount = document.getElementById('net-threat-count')?.textContent || '0';
+                    
+                    // Compile Threat Logs HTML Rows
+                    let threatTableHtml = '';
+                    const logsRows = document.querySelectorAll('#threat-history-tbody tr');
+                    if (logsRows.length > 0 && !logsRows[0].classList.contains('no-data')) {
+                        logsRows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length >= 7) {
+                                const id = cells[0].textContent.trim();
+                                const time = cells[1].textContent.trim();
+                                const src = cells[2].textContent.trim();
+                                const dst = cells[3].textContent.trim();
+                                const proto = cells[4].textContent.trim();
+                                const type = cells[5].textContent.trim();
+                                const sev = cells[6].textContent.trim();
+                                threatTableHtml += `
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 8px; font-family: monospace;">${id}</td>
+                                        <td style="padding: 8px;">${time}</td>
+                                        <td style="padding: 8px; font-family: monospace;">${src}</td>
+                                        <td style="padding: 8px; font-family: monospace;">${dst}</td>
+                                        <td style="padding: 8px;">${proto}</td>
+                                        <td style="padding: 8px; font-weight: 500;">${type}</td>
+                                        <td style="padding: 8px;"><span style="color: ${sev.includes('High') || sev.includes('Critical') ? '#ff3366' : '#f59e0b'}; font-weight: 600;">${sev}</span></td>
+                                    </tr>`;
+                            }
+                        });
+                    } else {
+                        threatTableHtml = '<tr><td colspan="7" style="padding: 15px; text-align: center; color: #94a3b8;">No active security anomalies or threat packets registered in the logs.</td></tr>';
+                    }
+                    
+                    // Compile Website Scans History HTML Rows
+                    let scansTableHtml = '';
+                    const historyItems = document.querySelectorAll('#scan-history-list .history-item');
+                    if (historyItems.length > 0 && !document.querySelector('#scan-history-list .no-data')) {
+                        historyItems.forEach(item => {
+                            const domain = item.querySelector('.history-url')?.textContent || '';
+                            const time = item.querySelector('.history-time')?.textContent || '';
+                            const grade = item.querySelector('.history-score-tag')?.textContent || '';
+                            
+                            let gradeColor = '#10b981';
+                            if (grade.includes('C') || grade.includes('D') || grade.includes('E')) gradeColor = '#f59e0b';
+                            if (grade.includes('F')) gradeColor = '#ff3366';
+
+                            scansTableHtml += `
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 8px; font-weight: 600;">${domain}</td>
+                                    <td style="padding: 8px;"><span style="color: ${gradeColor}; font-weight: 700;">${grade}</span></td>
+                                    <td style="padding: 8px; color: #64748b;">${time}</td>
+                                </tr>`;
+                        });
+                    } else {
+                        scansTableHtml = '<tr><td colspan="3" style="padding: 15px; text-align: center; color: #94a3b8;">No website audits executed in this session.</td></tr>';
+                    }
+                    
+                    // Render PDF DOM Container in memory
+                    const reportEl = document.createElement('div');
+                    reportEl.style.padding = '30px';
+                    reportEl.style.fontFamily = "'Inter', sans-serif";
+                    reportEl.style.color = '#0f172a';
+                    reportEl.style.background = '#ffffff';
+                    
+                    reportEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00f5d4; padding-bottom: 15px; margin-bottom: 25px;">
+                            <div>
+                                <h1 style="font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 800; color: #03050c; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Network and Web Scanner</h1>
+                                <p style="font-size: 11px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; letter-spacing: 1px;">AI-NIDS Sentinel security log audit</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p style="font-size: 12px; font-weight: 700; color: #03050c; margin: 0;">Agent: ${sessionUser.name}</p>
+                                <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">${sessionUser.email}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                            <div>
+                                <p style="font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin: 0 0 2px 0;">Audit Timestamp</p>
+                                <p style="font-size: 12px; font-weight: 500; color: #334155; margin: 0;">${timestamp}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin: 0 0 2px 0;">Unique User Code</p>
+                                <p style="font-size: 12px; font-family: monospace; font-weight: 700; color: #334155; margin: 0;">${sessionUser.userCode}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin: 0 0 2px 0;">Monitored Segment</p>
+                                <p style="font-size: 12px; font-weight: 500; color: #334155; margin: 0;">${monitoredSSID}</p>
+                            </div>
+                            <div>
+                                <p style="font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; margin: 0 0 2px 0;">System Threat Level</p>
+                                <p style="font-size: 12px; font-weight: 700; color: ${threatLevel.includes('Risk') || threatLevel.includes('High') ? '#ff3366' : '#10b981'}; margin: 0;">${threatLevel} (${threatCount} Active)</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h3 style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 0 0 10px 0; color:#03050c; text-transform: uppercase; letter-spacing: 0.5px;">Network Config Interface</h3>
+                            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b; width: 30%;">IP Address</td>
+                                    <td style="padding: 4px 0; font-weight: 600; color: #334155; font-family: monospace;">${ipv4}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b;">Gateway Address</td>
+                                    <td style="padding: 4px 0; font-weight: 600; color: #334155; font-family: monospace;">${gateway}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b;">DNS Nameserver</td>
+                                    <td style="padding: 4px 0; font-weight: 600; color: #334155; font-family: monospace;">${dns}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 4px 0; color: #64748b;">MAC Physical Code</td>
+                                    <td style="padding: 4px 0; font-weight: 600; color: #334155; font-family: monospace;">${mac}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="margin-bottom: 25px;">
+                            <h3 style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 0 0 10px 0; color:#03050c; text-transform: uppercase; letter-spacing: 0.5px;">Captured Threat Log Details</h3>
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 9px; line-height: 1.2;">
+                                <thead>
+                                    <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">ID</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Timestamp</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Source IP</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Dest IP</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Proto</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Threat Classification</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Severity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${threatTableHtml}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div>
+                            <h3 style="font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; margin: 0 0 10px 0; color:#03050c; text-transform: uppercase; letter-spacing: 0.5px;">Website Security Audits</h3>
+                            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+                                <thead>
+                                    <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Audited Domain Address</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">SSL Safety Grade</th>
+                                        <th style="padding: 6px; color: #475569; font-weight: 600;">Scan Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${scansTableHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    // Trigger PDF download with html2pdf
+                    const safeName = sessionUser.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    const opt = {
+                        margin:       [12, 12, 12, 12],
+                        filename:     `network_scan_report_${safeName}.pdf`,
+                        image:        { type: 'jpeg', quality: 0.98 },
+                        html2canvas:  { scale: 2, useCORS: true, logging: false },
+                        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    };
+                    
+                    html2pdf().set(opt).from(reportEl).save().then(() => {
+                        showToast('Security report downloaded successfully as PDF!', 'success');
+                    }).catch(err => {
+                        console.error('PDF export error:', err);
+                        showToast('PDF compilation failed. System fallback triggered.', 'error');
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
