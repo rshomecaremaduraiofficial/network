@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner - Terminal Login</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Access Granted HUD Overlay Styles */
+        .success-hud-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 6, 15, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .success-hud-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hud-card {
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: scale(0.9);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .success-hud-overlay.show .hud-card {
+            transform: scale(1);
+        }
+
+        /* Neon Scanning Ring */
+        .hud-scanner-ring {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hud-circle {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid transparent;
+        }
+
+        .ring-outer {
+            width: 140px;
+            height: 140px;
+            border-top-color: var(--primary);
+            border-bottom-color: var(--primary);
+            animation: spinCounter 1.8s linear infinite;
+        }
+
+        .ring-middle {
+            width: 110px;
+            height: 110px;
+            border-left-color: #00f2fe;
+            border-right-color: #4facfe;
+            animation: spin 1.2s linear infinite;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 254, 0.4));
+        }
+
+        .ring-inner {
+            width: 80px;
+            height: 80px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-check {
+            font-size: 32px;
+            color: #00ff88;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.8));
+            animation: pulseCheck 1.5s ease-in-out infinite alternate;
+        }
+
+        /* Security alerts text styles */
+        .hud-security-alert {
+            margin-bottom: 25px;
+        }
+
+        .hud-security-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 2px;
+            color: var(--primary);
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            padding: 4px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .hud-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 26px;
+            margin: 0 0 8px 0;
+            letter-spacing: 1px;
+        }
+
+        .text-glow-green {
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .hud-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+        }
+
+        /* Console Logs */
+        .hud-logs-container {
+            width: 100%;
+            background: rgba(5, 10, 25, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: left;
+            margin-bottom: 30px;
+            min-height: 100px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hud-log-row {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 6px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+        }
+
+        .hud-log-row.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Progress Bar */
+        .hud-progress-wrapper {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hud-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), #00ff88);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+            transition: width 2.5s cubic-bezier(0.1, 0.8, 0.25, 1);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes spinCounter {
+            to { transform: rotate(-360deg); }
+        }
+
+        @keyframes pulseCheck {
+            0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.5)); }
+            100% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(0, 255, 136, 1)); }
+        }
+
+        .blink-slow {
+            animation: blinkSlow 1.5s infinite alternate;
+        }
+
+        @keyframes blinkSlow {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+
+    <div class="auth-wrapper">
+        <div class="auth-card bg-glass animate-fade-in">
+
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h2>Scanner Login</h2>
+                <p>Provide security credentials to unlock dashboard console</p>
+            </div>
+
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="login-input">Username or Email</label>
+                    <input type="text" id="login-input" placeholder="name@company.com or User Code" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-pass">Password</label>
+                    <div class="input-password-wrapper"
+                        style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="login-pass" placeholder="••••••••" required
+                            style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                        <i class="fa-regular fa-eye toggle-password" data-target="login-pass"
+                            style="position: absolute; right: 14px; color: var(--text-secondary); cursor: pointer; transition: var(--transition-smooth); font-size: 14px;"></i>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="login-code">6-Digit User Code</label>
+                    <input type="text" id="login-code" maxlength="6" pattern="[0-9]{6}" placeholder="123456" required
+                        autocomplete="off">
+                </div>
+                <button type="submit" id="btn-login-submit" class="btn btn-primary btn-large"
+                    style="width: 100%; margin-top: 10px;">
+                    <span>Access Dashboard</span>
+                </button>
+            </form>
+
+            <div class="form-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                <a href="forgot.html" class="forgot-link"
+                    style="color: var(--primary); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s;">Forgot
+                    Password or User Code?</a>
+                <span style="color: var(--text-secondary); font-size: 13px;">Need an account? <a href="register.html"
+                        style="color: #fff; font-weight: 600;">Register Profile</a></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts configuration -->
+    <script src="main.js"></script>
+    <script>
+        // Redirect if already authenticated
+        redirectIfAuthenticated();
+
+        const formLogin = document.getElementById("form-login");
+        const loginSubmitBtn = document.getElementById("btn-login-submit");
+
+        formLogin.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const loginInput = document.getElementById("login-input").value.trim();
+            const password = document.getElementById("login-pass").value;
+            const userCode = document.getElementById("login-code").value.trim();
+
+            if (!loginInput || !password || !userCode) {
+                showToast("All fields are required to authenticate.", "error");
+                return;
+            }
+
+            loginSubmitBtn.disabled = true;
+            loginSubmitBtn.innerHTML = `<span class="spinner"></span> &nbsp; Authenticating...`;
+
+            const result = await callBackend({
+                action: "loginUser",
+                loginInput: loginInput,
+                password: password,
+                userCode: userCode
+            });
+
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.innerHTML = `<span>Access Dashboard</span>`;
+
+            if (result.success) {
+                // Save user session to localStorage
+                localStorage.setItem("user_session", JSON.stringify({
+                    name: result.name,
+                    email: result.email,
+                    userCode: result.userCode
+                }));
+
+                // Trigger access granted HUD sequence
+                const overlay = document.getElementById("success-hud-overlay");
+                const progressFill = document.getElementById("hud-progress-fill");
+                if (overlay) {
+                    overlay.classList.add("show");
+                    
+                    // Show a toast message
+                    showToast(`Access Authorized. Welcome back, agent ${result.name}!`, "success");
+                    
+                    // Animate log rows sequentially
+                    setTimeout(() => document.getElementById("hud-log-1")?.classList.add("show"), 200);
+                    setTimeout(() => document.getElementById("hud-log-2")?.classList.add("show"), 700);
+                    setTimeout(() => document.getElementById("hud-log-3")?.classList.add("show"), 1200);
+                    setTimeout(() => document.getElementById("hud-log-4")?.classList.add("show"), 1700);
+                    
+                    // Animate progress bar fill
+                    setTimeout(() => {
+                        if (progressFill) progressFill.style.width = "100%";
+                    }, 100);
+
+                    // Redirect to dashboard after sequence finishes
+                    setTimeout(() => {
+                        window.location.href = getRelativePath('dashboard') + "?login=success";
+                    }, 2800);
+                } else {
+                    window.location.href = getRelativePath('dashboard') + "?login=success";
+                }
+            } else {
+                showToast(result.error || "Authentication failed. Check your security entries.", "error");
+            }
+        });
+    </script>
+    <!-- Access Granted HUD Overlay -->
+    <div class="success-hud-overlay" id="success-hud-overlay">
+        <div class="hud-card animate-fade-in">
+            <!-- Neon scanning ring -->
+            <div class="hud-scanner-ring">
+                <div class="hud-circle ring-outer"></div>
+                <div class="hud-circle ring-middle"></div>
+                <div class="hud-circle ring-inner">
+                    <i class="fa-solid fa-shield-halved success-check"></i>
+                </div>
+            </div>
+            
+            <div class="hud-security-alert">
+                <span class="hud-security-badge blink-slow">ACCESS SYSTEM DETECTED</span>
+                <h1 class="hud-title text-glow-green">AUTHENTICATION GRANTED</h1>
+                <p class="hud-subtitle">Decryption key accepted. Welcome back, agent.</p>
+            </div>
+
+            <!-- Decrypting logs animation -->
+            <div class="hud-logs-container">
+                <div class="hud-log-row text-primary" id="hud-log-1">INITIALIZING SECURITY DESCRIPTOR... [OK]</div>
+                <div class="hud-log-row text-primary" id="hud-log-2">FETCHING SECURE TOKEN KEYS... [OK]</div>
+                <div class="hud-log-row text-primary" id="hud-log-3">ESTABLISHING VIRTUAL TERMINAL LINK... [OK]</div>
+                <div class="hud-log-row text-glow-green" id="hud-log-4">ACCESS LEVEL A-1 AUTHORIZED. SHIFTING TO DASHBOARD...</div>
+            </div>
+
+            <!-- Glowing load-bar -->
+            <div class="hud-progress-wrapper">
+                <div class="hud-progress-fill" id="hud-progress-fill"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner - Security Console</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { display: none; }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR PANE -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-wifi"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>Scanner</h2>
+                    <span>NETWORK & WEB</span>
+                </div>
+            </div>
+
+            <div class="system-status">
+                <div class="status-header">
+                    <div class="status-dot pulse-green"></div>
+                    <div class="status-info">
+                        <span class="status-label">Scanner Status</span>
+                        <span class="status-value text-green">GUARD ACTIVE</span>
+                    </div>
+                </div>
+                
+                <div class="network-selector">
+                    <label><i class="fa-solid fa-server"></i> Firewall Segment</label>
+                    <select id="segment-select">
+                        <option value="dmz">DMZ Core-Zone</option>
+                        <option value="lan">Internal Intranet</option>
+                        <option value="database">Database Repository</option>
+                    </select>
+                </div>
+
+                <div class="network-details-panel">
+                    <div class="details-header">
+                        <i class="fa-solid fa-circle-info"></i> Segment Logs
+                    </div>
+                    <div class="details-grid">
+                        <div class="details-row">
+                            <span class="details-label">Active Connections</span>
+                            <span class="details-value" id="stats-conn">3,492</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Bandwidth Rate</span>
+                            <span class="details-value" id="stats-bw">142 Mbps</span>
+                        </div>
+                        <div class="details-row">
+                            <span class="details-label">Threat Blocked</span>
+                            <span class="details-value" id="stats-threat">28</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="switchTab('dashboard')">
+                    <i class="fa-solid fa-chart-line"></i> Dashboard Metrics
+                </a>
+                <a href="#" class="nav-item" onclick="switchTab('threats')">
+                    <i class="fa-solid fa-bug-slash"></i> Threat Detections
+                </a>
+                <a href="#" class="nav-item" onclick="switchTab('database')">
+                    <i class="fa-solid fa-database"></i> Database Records
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span>V2.8.5</span>
+                <span>SECURE ENV</span>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT PANEL -->
+        <main class="main-content">
+            
+            <!-- HEADER -->
+            <header class="top-header">
+                <div>
+                    <h1 id="tab-title">Scanner Dashboard</h1>
+                    <div class="subtitle">Security analytics database mapping core networks</div>
+                </div>
+                <div class="header-right">
+                    <div class="live-clock" id="scanner-clock">
+                        <i class="fa-regular fa-clock text-blue"></i> --:--:--
+                    </div>
+                    
+                    <!-- USER OPERATOR PROFILE BADGE -->
+                    <div class="profile-badge">
+                        <div class="profile-avatar">O</div>
+                        <div class="profile-info">
+                            <span class="profile-name">Operator</span>
+                            <span class="profile-role">Scanner Administrator</span>
+                        </div>
+                        <button onclick="handleLogout()" style="background:none; border:none; color: var(--red); cursor:pointer; margin-left: 8px; font-size:14px;" title="Logout Session">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB CONTAINER: DASHBOARD -->
+            <div id="tab-dashboard" class="tab-pane active">
+                
+                <!-- Metrics Widget cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card bg-glass">
+                        <div class="metric-header">
+                            <span class="metric-title">Firewall Score</span>
+                            <div class="metric-icon bg-blue-dim text-blue">
+                                <i class="fa-solid fa-gauge-high"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">98.4%</div>
+                        <div class="metric-trend text-green">
+                            <i class="fa-solid fa-caret-up"></i> +0.2% optimal
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-glass">
+                        <div class="metric-header">
+                            <span class="metric-title">Critical Threats</span>
+                            <div class="metric-icon bg-red-dim text-red">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value text-red">0</div>
+                        <div class="metric-trend text-green">
+                            <i class="fa-solid fa-circle-check"></i> Safe status
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-glass">
+                        <div class="metric-header">
+                            <span class="metric-title">Scanned Inodes</span>
+                            <div class="metric-icon bg-purple-dim text-purple">
+                                <i class="fa-solid fa-shield-virus"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value" id="stats-inodes">1,402,891</div>
+                        <div class="metric-trend text-blue">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Realtime scans
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Threat warning marquee ticker -->
+                <div class="marquee-alert-container marquee-safe">
+                    <div style="font-size:16px;" class="text-green">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="marquee-text marquee-safe">
+                        All systems operational. Firewall security rules active. Databases logging data packets successfully.
+                    </div>
+                </div>
+
+                <div class="charts-row">
+                    <div class="col-8 chart-container bg-glass">
+                        <div class="chart-header">
+                            <h3>Threat Scanning Overview</h3>
+                            <span class="chart-desc">Traffic behavior anomalies scanned inside database network files</span>
+                        </div>
+                        <div class="chart-wrapper" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                            <div style="text-align: center;">
+                                <i class="fa-solid fa-chart-area" style="font-size:48px; margin-bottom:12px;" class="text-blue"></i>
+                                <p style="font-size:13px; font-weight: 500;">Live scan plotting active (mock-plotting metrics)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4 chart-container bg-glass">
+                        <div class="chart-header">
+                            <h3>Firewall Classification</h3>
+                            <span class="chart-desc">Traffic load division categories</span>
+                        </div>
+                        <div class="chart-wrapper" style="display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                            <div style="text-align: center;">
+                                <i class="fa-solid fa-chart-pie" style="font-size:48px; margin-bottom:12px;" class="text-purple"></i>
+                                <p style="font-size:13px; font-weight: 500;">DMZ Network Layer dominates traffic load allocation (72%)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTAINER: THREAT DETECTIONS -->
+            <div id="tab-threats" class="tab-pane">
+                <div class="bg-glass recent-alerts-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Real-Time Network Threat Logs</h3>
+                            <span class="card-desc">Active alert rules captured by Scanner anomaly detectors</span>
+                        </div>
+                        <span class="badge badge-info">Monitoring Live</span>
+                    </div>
+
+                    <div class="alerts-list">
+                        <div class="alert-item">
+                            <div class="alert-item-left">
+                                <div class="alert-severity-indicator sev-low"></div>
+                                <div class="alert-details">
+                                    <h4>ICMP Query Flooding</h4>
+                                    <p>Anomalous ping requests from segment terminal zone 1</p>
+                                </div>
+                            </div>
+                            <div class="alert-item-right">
+                                <span class="badge badge-warning">MITIGATED</span>
+                                <span class="alert-time-badge">14:02:11</span>
+                            </div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-item-left">
+                                <div class="alert-severity-indicator sev-medium"></div>
+                                <div class="alert-details">
+                                    <h4>SQL Injection Pattern Identified</h4>
+                                    <p>Suspicious string payloads found matching POST queries inside login sheets</p>
+                                </div>
+                            </div>
+                            <div class="alert-item-right">
+                                <span class="badge badge-info">RESOLVED</span>
+                                <span class="alert-time-badge">12:15:32</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTAINER: DATABASE RECORDS -->
+            <div id="tab-database" class="tab-pane">
+                <div class="bg-glass recent-alerts-card">
+                    <div class="card-header">
+                        <div>
+                            <h3>Registered Security Logs database</h3>
+                            <span class="card-desc">System records mapped to local storage files</span>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container bg-glass">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Operator Name</th>
+                                    <th>Identity Email</th>
+                                    <th>Device Code</th>
+                                    <th>Created At</th>
+                                    <th>Status Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="db-user-rows">
+                                <tr>
+                                    <td colspan="5" class="no-data">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                        <p>Secure login required to query remote sheets</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Scripts configuration -->
+    <script src="main.js"></script>
+    <script>
+        // Enforce Authentication Checks
+        enforceAuth();
+        initLiveClock();
+
+        // Switch Dashboard tab panels
+        function switchTab(tabName) {
+            // Hide all tab panes
+            const panes = document.querySelectorAll(".tab-pane");
+            panes.forEach(pane => pane.classList.remove("active"));
+            
+            // Deactivate all nav items
+            const navItems = document.querySelectorAll(".nav-item");
+            navItems.forEach(item => item.classList.remove("active"));
+
+            // Activate select elements
+            document.getElementById(`tab-${tabName}`).classList.add("active");
+            
+            // Find matched nav element to set active highlight
+            event.currentTarget.classList.add("active");
+
+            // Update title
+            const titleEl = document.getElementById("tab-title");
+            if (tabName === "dashboard") titleEl.textContent = "Scanner Dashboard";
+            if (tabName === "threats") titleEl.textContent = "Threat Detections";
+            if (tabName === "database") {
+                titleEl.textContent = "Database Records";
+                loadDatabaseMock();
+            }
+        }
+
+        // Mock databases loading display
+        function loadDatabaseMock() {
+            const tbody = document.getElementById("db-user-rows");
+            const sessionUser = getSessionUser();
+
+            if (!sessionUser) return;
+
+            // Show skeleton loading rows
+            tbody.innerHTML = `
+                <tr>
+                    <td><span class="skeleton-loader" style="width: 120px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 180px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 60px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 80px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 95px;"></span></td>
+                </tr>
+                <tr>
+                    <td><span class="skeleton-loader" style="width: 140px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 160px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 60px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 80px;"></span></td>
+                    <td><span class="skeleton-loader" style="width: 95px;"></span></td>
+                </tr>
+            `;
+
+            setTimeout(() => {
+                tbody.innerHTML = `
+                    <tr>
+                        <td><strong>${sessionUser.name}</strong> (You)</td>
+                        <td>${sessionUser.email}</td>
+                        <td><code style="color:var(--primary); font-family:var(--font-mono); font-weight:700;">${sessionUser.userCode}</code></td>
+                        <td>${new Date().toLocaleDateString()}</td>
+                        <td><span class="badge badge-success">ACTIVE LOG</span></td>
+                    </tr>
+                    <tr>
+                        <td>Security System Root</td>
+                        <td>scanner-admin@nids.local</td>
+                        <td><code>000000</code></td>
+                        <td>01/01/2026</td>
+                        <td><span class="badge badge-info">SYSTEM</span></td>
+                    </tr>
+                `;
+            }, 750);
+        }
+
+        // Network Firewall segment selections mock metrics update
+        const segmentSelect = document.getElementById("segment-select");
+        segmentSelect.addEventListener("change", function(e) {
+            const segment = e.target.value;
+            const statsConn = document.getElementById("stats-conn");
+            const statsBw = document.getElementById("stats-bw");
+            const statsThreat = document.getElementById("stats-threat");
+
+            // Display shimmering skeletons for loading
+            statsConn.innerHTML = `<span class="skeleton-loader" style="width: 60px;"></span>`;
+            statsBw.innerHTML = `<span class="skeleton-loader" style="width: 80px;"></span>`;
+            statsThreat.innerHTML = `<span class="skeleton-loader" style="width: 40px;"></span>`;
+
+            showToast(`Loading security metrics for firewall segment: ${segment.toUpperCase()}...`, "info");
+
+            setTimeout(() => {
+                if (segment === "dmz") {
+                    statsConn.textContent = "3,492";
+                    statsBw.textContent = "142 Mbps";
+                    statsThreat.textContent = "28";
+                } else if (segment === "lan") {
+                    statsConn.textContent = "812";
+                    statsBw.textContent = "650 Mbps";
+                    statsThreat.textContent = "2";
+                } else {
+                    statsConn.textContent = "41";
+                    statsBw.textContent = "45 Mbps";
+                    statsThreat.textContent = "0";
+                }
+                showToast(`Segment ${segment.toUpperCase()} loaded successfully.`, "success");
+            }, 750);
+        });
+    </script>
+</body>
+</html>

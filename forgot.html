@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner - Recover Credentials</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+
+    <div class="auth-wrapper">
+        <div class="auth-card bg-glass animate-fade-in">
+            
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2>Recover Credentials</h2>
+                <p>Verify your details to retrieve code or change password</p>
+            </div>
+
+            <!-- STEP 1: IDENTITY LOOKUP -->
+            <div id="step-lookup" class="wizard-step active">
+                <form id="form-lookup">
+                    <div class="form-group">
+                        <label for="forgot-name">Full Name</label>
+                        <input type="text" id="forgot-name" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="forgot-email">Email Address</label>
+                        <input type="email" id="forgot-email" placeholder="name@company.com" required>
+                    </div>
+                    <button type="submit" id="btn-lookup-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 10px;">
+                        <span>Verify Identity</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- STEP 2: OTP VERIFICATION -->
+            <div id="step-otp" class="wizard-step">
+                <p style="text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+                    A recovery verification code has been dispatched to:
+                    <span id="display-otp-email" style="display: block; color: var(--primary); font-family: var(--font-mono); margin-top: 4px; font-weight: 600;"></span>
+                </p>
+                <form id="form-otp">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Enter 6-digit Security OTP</label>
+                        <div class="otp-container">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                            <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="timer-box" style="margin-top: 15px; text-align: center; font-size: 13px; color: var(--text-secondary);">
+                        Code expires in: <span id="countdown-timer" style="color: var(--red); font-family: var(--font-mono); font-weight: 700;">05:00</span>
+                    </div>
+
+                    <button type="submit" id="btn-verify-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 20px;">
+                        <span>Confirm Verification Code</span>
+                    </button>
+                </form>
+                <div style="text-align: center; margin-top: 15px;">
+                    <button type="button" id="btn-resend" class="resend-btn" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 13px; font-weight: 600;" disabled>Resend Code</button>
+                </div>
+            </div>
+
+            <!-- STEP 3: ACCESS & RESET PANEL -->
+            <div id="step-recovery-panel" class="wizard-step">
+                <div class="user-code-badge" style="text-align: center; padding: 15px; background: rgba(0, 245, 212, 0.08); border: 1px dashed var(--primary); border-radius: 12px; margin-bottom: 24px;">
+                    <span style="display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Recovered 6-Digit User Code</span>
+                    <strong id="display-recovered-code" style="font-size: 32px; font-family: var(--font-mono); color: var(--primary); letter-spacing: 2px;">000000</strong>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-glass); padding-bottom: 15px;">
+                    <p style="font-size: 13px; color: var(--text-secondary);">Your User Code is shown above. To reset your password, complete the form below. Otherwise, you can go back directly to Login.</p>
+                </div>
+
+                <form id="form-reset">
+                    <div class="form-group">
+                        <label for="reset-pass">New Password</label>
+                        <div class="input-password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="reset-pass" placeholder="••••••••" required style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                            <i class="fa-regular fa-eye toggle-password" data-target="reset-pass" style="position: absolute; right: 14px; color: var(--text-secondary); cursor: pointer; transition: var(--transition-smooth); font-size: 14px;"></i>
+                        </div>
+                        
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength-container" id="reset-strength-container" style="margin-top: 8px; display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 11px; color: var(--text-secondary);">Password Strength:</span>
+                                <span id="reset-strength-label" style="font-size: 11px; font-weight: 700; color: var(--red);">Weak</span>
+                            </div>
+                            <div class="strength-meter-bg" style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                                <div id="reset-strength-bar" style="width: 0%; height: 100%; background: var(--red); transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                            <ul class="strength-requirements" style="margin: 8px 0 0 0; padding: 0 0 0 16px; font-size: 11px; color: var(--text-secondary); line-height: 1.5; list-style-type: none;">
+                                <li id="reset-req-len" class="req-item text-red" style="margin-bottom: 2px;"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> At least 8 characters</li>
+                                <li id="reset-req-case" class="req-item text-red" style="margin-bottom: 2px;"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> Upper & lower case letters</li>
+                                <li id="reset-req-num" class="req-item text-red"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> At least one number or symbol</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reset-confirm">Confirm Password</label>
+                        <div class="input-password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="reset-confirm" placeholder="••••••••" required style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                            <i class="fa-regular fa-eye toggle-password" data-target="reset-confirm" style="position: absolute; right: 14px; color: var(--text-secondary); cursor: pointer; transition: var(--transition-smooth); font-size: 14px;"></i>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-reset-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 10px;">
+                        <span>Save New Password</span>
+                    </button>
+                </form>
+
+                <div style="margin-top: 15px;">
+                    <a href="login.html" class="btn btn-secondary btn-large" style="width: 100%; text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                        <span>Return to Terminal Login</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="form-footer" style="margin-top: 20px; border-top: 1px solid var(--border-glass); padding-top: 15px; display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;">
+                <span>Remembered your credentials? <a href="login.html" style="color: #fff; font-weight: 600; text-decoration: none;">Login Profile</a></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SUCCESS VERIFICATION OVERLAY SCREEN -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-card bg-glass">
+            <div class="success-icon-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-family: var(--font-title); font-size: 28px; font-weight: 800; color: #fff;">Password Updated!</h2>
+            <p style="color: var(--text-secondary); margin: 12px 0 24px 0; font-size: 14px;">
+                Your security password has been changed and updated in the security database. You may now proceed to log in using your new credentials.
+            </p>
+            <a href="login.html" class="btn btn-primary btn-large" style="text-decoration: none; width: 100%; display: inline-block; text-align: center;">
+                Go to Terminal Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts configuration -->
+    <script src="main.js"></script>
+    <script>
+        // Redirect check
+        redirectIfAuthenticated();
+
+        // Local state
+        let forgotUserEmail = "";
+        let forgotUserOtp = "";
+
+        const formLookup = document.getElementById("form-lookup");
+        const formOtp = document.getElementById("form-otp");
+        const formReset = document.getElementById("form-reset");
+
+        const stepLookup = document.getElementById("step-lookup");
+        const stepOtp = document.getElementById("step-otp");
+        const stepRecoveryPanel = document.getElementById("step-recovery-panel");
+
+        const btnLookupSubmit = document.getElementById("btn-lookup-submit");
+        const btnVerifySubmit = document.getElementById("btn-verify-submit");
+        const btnResetSubmit = document.getElementById("btn-reset-submit");
+
+        const countdownEl = document.getElementById("countdown-timer");
+        const resendBtn = document.getElementById("btn-resend");
+
+        // Countdown timer variables
+        let timeLeft = 300;
+        let activeTimer = null;
+
+        function startTimer() {
+            if (activeTimer) clearInterval(activeTimer);
+            timeLeft = 300;
+            resendBtn.disabled = true;
+            resendBtn.textContent = "Resend Code";
+            
+            activeTimer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(activeTimer);
+                    countdownEl.textContent = "00:00";
+                    resendBtn.disabled = false;
+                    showToast("Your verification code has expired. Please click Resend Code.", "error");
+                }
+            }, 1000);
+        }
+
+        // STEP 1: IDENTITY LOOKUP
+        formLookup.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("forgot-name").value.trim();
+            const email = document.getElementById("forgot-email").value.trim();
+
+            if (!name || !email) {
+                showToast("Please enter your name and email.", "error");
+                return;
+            }
+
+            btnLookupSubmit.disabled = true;
+            btnLookupSubmit.innerHTML = `<span class="spinner"></span> &nbsp; Verifying Database...`;
+
+            const result = await callBackend({
+                action: "forgotInit",
+                name: name,
+                email: email
+            });
+
+            btnLookupSubmit.disabled = false;
+            btnLookupSubmit.innerHTML = `<span>Verify Identity</span>`;
+
+            if (result.success) {
+                forgotUserEmail = email;
+                document.getElementById("display-otp-email").textContent = email;
+                
+                // Show Step 2
+                stepLookup.classList.remove("active");
+                stepOtp.classList.add("active");
+                
+                showToast("Identity verified. A recovery code has been sent to your email.", "success");
+                startTimer();
+            } else {
+                showToast(result.error || "Profile matching failed. Check your entries.", "error");
+            }
+        });
+
+        // OTP inputs autofocus logic
+        const digits = document.querySelectorAll(".otp-digit");
+        digits.forEach((input, index) => {
+            // Forward focus
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && index < digits.length - 1) {
+                    digits[index + 1].focus();
+                }
+            });
+
+            // Backward backspace focus
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && e.target.value.length === 0 && index > 0) {
+                    digits[index - 1].focus();
+                }
+            });
+
+            // Handling paste operation
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pasteData = e.clipboardData.getData("text").trim();
+                if (/^\d{6}$/.test(pasteData)) {
+                    for (let i = 0; i < digits.length; i++) {
+                        digits[i].value = pasteData[i];
+                    }
+                    digits[digits.length - 1].focus();
+                }
+            });
+        });
+
+        // Resend recovery code trigger
+        resendBtn.addEventListener("click", async () => {
+            resendBtn.disabled = true;
+            resendBtn.textContent = "Sending...";
+            
+            const result = await callBackend({
+                action: "resendRecoveryOTP",
+                email: forgotUserEmail
+            });
+
+            if (result.success) {
+                showToast("A new recovery code has been sent to your email inbox.", "success");
+                startTimer();
+            } else {
+                showToast(result.error || "Failed to resend verification code.", "error");
+                resendBtn.disabled = false;
+                resendBtn.textContent = "Resend Code";
+            }
+        });
+
+        // STEP 2: OTP VERIFICATION
+        formOtp.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            let otp = "";
+            digits.forEach(input => {
+                otp += input.value;
+            });
+
+            if (otp.length !== 6) {
+                showToast("Please enter the complete 6-digit OTP code.", "error");
+                return;
+            }
+
+            btnVerifySubmit.disabled = true;
+            btnVerifySubmit.innerHTML = `<span class="spinner"></span> &nbsp; Verifying Code...`;
+
+            const result = await callBackend({
+                action: "forgotVerifyOTP",
+                email: forgotUserEmail,
+                otp: otp
+            });
+
+            btnVerifySubmit.disabled = false;
+            btnVerifySubmit.innerHTML = `<span>Confirm Verification Code</span>`;
+
+            if (result.success) {
+                forgotUserOtp = otp;
+                if (activeTimer) clearInterval(activeTimer);
+                
+                // Show user code
+                document.getElementById("display-recovered-code").textContent = result.userCode;
+
+                // Transition to Step 3
+                stepOtp.classList.remove("active");
+                stepRecoveryPanel.classList.add("active");
+                
+                showToast("Access authorized. Credentials unlocked.", "success");
+            } else {
+                showToast(result.error || "Invalid verification code entered.", "error");
+            }
+        });
+
+        // STEP 3: RESET PASSWORD
+        formReset.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const password = document.getElementById("reset-pass").value;
+            const confirm = document.getElementById("reset-confirm").value;
+
+            if (password !== confirm) {
+                showToast("Passwords do not match.", "error");
+                return;
+            }
+
+            btnResetSubmit.disabled = true;
+            btnResetSubmit.innerHTML = `<span class="spinner"></span> &nbsp; Updating Security Database...`;
+
+            const result = await callBackend({
+                action: "forgotResetPassword",
+                email: forgotUserEmail,
+                otp: forgotUserOtp,
+                newPassword: password
+            });
+
+            btnResetSubmit.disabled = false;
+            btnResetSubmit.innerHTML = `<span>Save New Password</span>`;
+
+            if (result.success) {
+                // Show success overlay modal
+                document.getElementById("success-overlay").classList.add("show");
+            } else {
+                showToast(result.error || "Password update failed.", "error");
+            }
+        });
+    </script>
+</body>
+</html>

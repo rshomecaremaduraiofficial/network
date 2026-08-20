@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner - Register Profile</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+
+    <div class="auth-wrapper">
+        <div class="auth-card bg-glass animate-fade-in">
+            
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-wifi"></i>
+                </div>
+                <h2>Register Account</h2>
+                <p>Register profile identity logs to security server</p>
+            </div>
+
+            <!-- STEP 1: IDENTITY INFO -->
+            <div id="step-identity" class="wizard-step active">
+                <form id="form-identity">
+                    <div class="form-group">
+                        <label for="reg-name">Full Name</label>
+                        <input type="text" id="reg-name" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" placeholder="name@company.com" required>
+                    </div>
+                    <button type="submit" id="btn-identity-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 10px;">
+                        <span>Continue</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- STEP 2: PASSWORD SETTING & CODE DISPLAY -->
+            <div id="step-security" class="wizard-step">
+                <div class="user-code-badge">
+                    <span>Your Unique User Code</span>
+                    <strong id="display-user-code">000000</strong>
+                </div>
+                <form id="form-security">
+                    <div class="form-group">
+                        <label for="reg-pass">Create Password</label>
+                        <div class="input-password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="reg-pass" placeholder="••••••••" required style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                            <i class="fa-regular fa-eye toggle-password" data-target="reg-pass" style="position: absolute; right: 14px; color: var(--text-secondary); cursor: pointer; transition: var(--transition-smooth); font-size: 14px;"></i>
+                        </div>
+                        
+                        <!-- Password Strength Indicator -->
+                        <div class="password-strength-container" id="reg-strength-container" style="margin-top: 8px; display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <span style="font-size: 11px; color: var(--text-secondary);">Password Strength:</span>
+                                <span id="reg-strength-label" style="font-size: 11px; font-weight: 700; color: var(--red);">Weak</span>
+                            </div>
+                            <div class="strength-meter-bg" style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                                <div id="reg-strength-bar" style="width: 0%; height: 100%; background: var(--red); transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                            <ul class="strength-requirements" style="margin: 8px 0 0 0; padding: 0 0 0 16px; font-size: 11px; color: var(--text-secondary); line-height: 1.5; list-style-type: none;">
+                                <li id="reg-req-len" class="req-item text-red" style="margin-bottom: 2px;"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> At least 8 characters</li>
+                                <li id="reg-req-case" class="req-item text-red" style="margin-bottom: 2px;"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> Upper & lower case letters</li>
+                                <li id="reg-req-num" class="req-item text-red"><i class="fa-solid fa-circle-xmark" style="margin-right: 6px; font-size: 10px;"></i> At least one number or symbol</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-confirm">Confirm Password</label>
+                        <div class="input-password-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="reg-confirm" placeholder="••••••••" required style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                            <i class="fa-regular fa-eye toggle-password" data-target="reg-confirm" style="position: absolute; right: 14px; color: var(--text-secondary); cursor: pointer; transition: var(--transition-smooth); font-size: 14px;"></i>
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-security-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 10px;">
+                        <span>Complete Registration</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="form-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: center;">
+                <span>Already registered? <a href="login.html" style="color: var(--primary); font-weight: 600; text-decoration: none;">Login Profile</a></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts configuration -->
+    <script src="main.js"></script>
+    <script>
+        // Redirect if already authenticated
+        redirectIfAuthenticated();
+
+        // Local state indicators
+        let userEmail = "";
+        let userName = "";
+
+        const formIdentity = document.getElementById("form-identity");
+        const formSecurity = document.getElementById("form-security");
+        const stepIdentity = document.getElementById("step-identity");
+        const stepSecurity = document.getElementById("step-security");
+
+        const btnIdentity = document.getElementById("btn-identity-submit");
+        const btnSecurity = document.getElementById("btn-security-submit");
+
+        // STEP 1 submission
+        formIdentity.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            
+            const nameInput = document.getElementById("reg-name").value.trim();
+            const emailInput = document.getElementById("reg-email").value.trim();
+
+            if (!nameInput || !emailInput) {
+                showToast("Please enter your name and email address.", "error");
+                return;
+            }
+
+            // Disable triggers
+            btnIdentity.disabled = true;
+            btnIdentity.innerHTML = `<span class="spinner"></span> &nbsp; Checking Database...`;
+
+            const result = await callBackend({
+                action: "registerInit",
+                name: nameInput,
+                email: emailInput
+            });
+
+            btnIdentity.disabled = false;
+            btnIdentity.innerHTML = `<span>Continue</span>`;
+
+            if (result.success) {
+                userEmail = emailInput;
+                userName = nameInput;
+                document.getElementById("display-user-code").textContent = result.userCode;
+
+                // Move Wizard slide
+                stepIdentity.classList.remove("active");
+                stepSecurity.classList.add("active");
+                showToast("Identity verified. Please set a secure password.", "success");
+            } else {
+                showToast(result.error || "Failed to process database records.", "error");
+            }
+        });
+
+        // STEP 2 submission
+        formSecurity.addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const password = document.getElementById("reg-pass").value;
+            const confirm = document.getElementById("reg-confirm").value;
+
+            if (password !== confirm) {
+                showToast("Passwords do not match.", "error");
+                return;
+            }
+
+            // Disable triggers
+            btnSecurity.disabled = true;
+            btnSecurity.innerHTML = `<span class="spinner"></span> &nbsp; Initializing OTP Mail...`;
+
+            const result = await callBackend({
+                action: "registerComplete",
+                email: userEmail,
+                password: password
+            });
+
+            btnSecurity.disabled = false;
+            btnSecurity.innerHTML = `<span>Complete Registration</span>`;
+
+            if (result.success) {
+                showToast("OTP has been dispatched. Please check your email inbox.", "success");
+                // Save temp email to storage for verify page reference
+                localStorage.setItem("pending_verify_email", userEmail);
+                setTimeout(() => {
+                    window.location.href = "verify.html";
+                }, 1500);
+            } else {
+                showToast(result.error || "Password registration update failed.", "error");
+            }
+        });
+    </script>
+</body>
+</html>

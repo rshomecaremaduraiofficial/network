@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network & Web Scanner - OTP Verification</title>
+    <!-- Outfit & Inter Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video">
+        <source src="bg.mp4" type="video/mp4">
+    </video>
+
+    <div class="auth-wrapper">
+        <div class="auth-card bg-glass">
+            
+            <div class="auth-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2>Security Verification</h2>
+                <p>A verification code has been dispatched to your email address.</p>
+                <p style="margin-top: 5px; color: var(--primary); font-family: var(--font-mono); font-size: 12px;" id="target-email-display">user@domain.com</p>
+            </div>
+
+            <form id="form-verify">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Enter 6-digit Security OTP</label>
+                    <div class="otp-container">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                        <input type="text" class="otp-digit" maxlength="1" pattern="[0-9]" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="timer-box">
+                    Code expires in: <span id="countdown-timer">05:00</span>
+                </div>
+
+                <button type="submit" id="btn-verify-submit" class="btn btn-primary btn-large" style="width: 100%; margin-top: 24px;">
+                    <span>Verify Code</span>
+                </button>
+            </form>
+
+            <div class="form-footer" style="display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center;">
+                <span>Didn't receive the verification code? <button type="button" id="btn-resend" class="resend-btn" disabled>Resend Code</button></span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SUCCESS VERIFICATION OVERLAY SCREEN -->
+    <div class="success-overlay" id="success-overlay">
+        <div class="success-card bg-glass">
+            <div class="success-icon-badge">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 style="font-family: var(--font-title); font-size: 28px; font-weight: 800; color: #fff;">Access Authorized!</h2>
+            <p style="color: var(--text-secondary); margin: 12px 0 24px 0; font-size: 14px;" id="success-message">
+                Congratulations, your security credentials have been registered.
+            </p>
+            <a href="login.html" id="success-go-login" class="btn btn-primary btn-large" style="text-decoration: none; width: 100%;">
+                Go to Terminal Login
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts configuration -->
+    <script src="main.js"></script>
+    <script>
+        // Redirect check
+        redirectIfAuthenticated();
+
+        // Retrieve target email address from localStorage
+        const email = localStorage.getItem("pending_verify_email");
+        
+        // Dynamically resolve Go Login button href
+        const goLoginBtn = document.getElementById("success-go-login");
+        if (goLoginBtn) {
+            goLoginBtn.href = getRelativePath('login');
+        }
+
+        if (!email) {
+            showToast("No active registration session found. Redirecting to registration...", "error");
+            setTimeout(() => {
+                window.location.href = "register.html";
+            }, 2000);
+        } else {
+            document.getElementById("target-email-display").textContent = email;
+        }
+
+        // OTP inputs autofocus logic
+        const digits = document.querySelectorAll(".otp-digit");
+        digits.forEach((input, index) => {
+            // Forward focus
+            input.addEventListener("input", (e) => {
+                if (e.target.value.length === 1 && index < digits.length - 1) {
+                    digits[index + 1].focus();
+                }
+            });
+
+            // Backward backspace focus
+            input.addEventListener("keydown", (e) => {
+                if (e.key === "Backspace" && e.target.value.length === 0 && index > 0) {
+                    digits[index - 1].focus();
+                }
+            });
+
+            // Handling paste operation
+            input.addEventListener("paste", (e) => {
+                e.preventDefault();
+                const pasteData = e.clipboardData.getData("text").trim();
+                if (/^\d{6}$/.test(pasteData)) {
+                    for (let i = 0; i < digits.length; i++) {
+                        digits[i].value = pasteData[i];
+                    }
+                    digits[digits.length - 1].focus();
+                }
+            });
+        });
+
+        // 5-minute Countdown Timer logic
+        let timeLeft = 300; // 5 minutes in seconds
+        const countdownEl = document.getElementById("countdown-timer");
+        const resendBtn = document.getElementById("btn-resend");
+
+        function startTimer() {
+            const timer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    countdownEl.textContent = "00:00";
+                    resendBtn.disabled = false;
+                    showToast("Your OTP verification code has expired. Please click Resend Code.", "error");
+                }
+            }, 1000);
+            return timer;
+        }
+
+        let activeTimer = startTimer();
+
+        // Resend code trigger
+        resendBtn.addEventListener("click", async () => {
+            resendBtn.disabled = true;
+            resendBtn.textContent = "Sending...";
+            
+            const result = await callBackend({
+                action: "resendOTP",
+                email: email
+            });
+
+            if (result.success) {
+                showToast("A new verification code has been sent to your email inbox.", "success");
+                timeLeft = 300; // Reset countdown
+                resendBtn.textContent = "Resend Code";
+                activeTimer = startTimer();
+            } else {
+                showToast(result.error || "Failed to resend verification code.", "error");
+                resendBtn.disabled = false;
+                resendBtn.textContent = "Resend Code";
+            }
+        });
+
+        // Form submit
+        const formVerify = document.getElementById("form-verify");
+        const verifySubmitBtn = document.getElementById("btn-verify-submit");
+
+        formVerify.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Assemble code
+            let otp = "";
+            digits.forEach(input => {
+                otp += input.value;
+            });
+
+            if (otp.length !== 6) {
+                showToast("Please enter the complete 6-digit OTP code.", "error");
+                return;
+            }
+
+            verifySubmitBtn.disabled = true;
+            verifySubmitBtn.innerHTML = `<span class="spinner"></span> &nbsp; Verifying...`;
+
+            const result = await callBackend({
+                action: "verifyOTP",
+                email: email,
+                otp: otp
+            });
+
+            verifySubmitBtn.disabled = false;
+            verifySubmitBtn.innerHTML = `<span>Verify Code</span>`;
+
+            if (result.success) {
+                // Clear temporary register email
+                localStorage.removeItem("pending_verify_email");
+                
+                // Show custom welcome message
+                document.getElementById("success-message").textContent = `Congratulations ${result.name}, your account has been successfully created and verified. You may now log in to access the Scanner console.`;
+                document.getElementById("success-overlay").classList.add("show");
+            } else {
+                showToast(result.error || "Invalid verification code entered.", "error");
+            }
+        });
+    </script>
+</body>
+</html>
