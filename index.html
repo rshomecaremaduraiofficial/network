@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Network & Web Scanner – Cybersecurity Scanning Made Simple</title>
+  <meta name="description"
+    content="A simple and powerful cybersecurity tool designed exclusively for University of Greenwich students to scan networks and web assets, identify potential security issues, and better understand their security environment." />
+
+  <!-- Open Graph Meta -->
+  <meta property="og:title" content="Network & Web Scanner" />
+  <meta property="og:description"
+    content="A simple and powerful cybersecurity tool designed exclusively for University of Greenwich students to scan networks and web assets, identify potential security issues, and better understand their security environment." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/logo.png" />
+  <meta name="theme-color" content="#070b16" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <link rel="shortcut icon" href="assets/favicon.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- Ambient Background with Video -->
+  <div class="cyber-bg" aria-hidden="true">
+    <video class="bg-video" autoplay muted loop playsinline>
+      <source src="assets/bg.mp4" type="video/mp4" />
+    </video>
+    <div class="cyber-bg-overlay"></div>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- Header / Navigation -->
+  <header class="site-header" id="site-header">
+    <div class="container header-container">
+      <a href="#hero" class="brand-logo" aria-label="Network & Web Scanner Home">
+        <img src="assets/logo.svg" alt="Network & Web Scanner Logo" class="brand-logo-img" width="32" height="32" />
+        <span class="brand-name">Network &amp; Web Scanner</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav" aria-label="Main Navigation">
+        <ul class="nav-list">
+          <li><a href="#about" class="nav-link">About</a></li>
+          <li><a href="#solution" class="nav-link">Solution</a></li>
+          <li><a href="#software" class="nav-link">Software</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Header Right Action -->
+      <div class="header-actions">
+        <a href="#software" class="btn btn-sm btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Download</span>
+        </a>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false"
+          aria-controls="mobile-nav">
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+          <span class="hamburger-bar"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Navigation -->
+    <div class="mobile-nav" id="mobile-nav" aria-hidden="true">
+      <div class="mobile-nav-inner">
+        <ul class="mobile-nav-list">
+          <li><a href="#about" class="mobile-nav-link">About</a></li>
+          <li><a href="#solution" class="mobile-nav-link">Solution</a></li>
+          <li><a href="#software" class="mobile-nav-link">Software</a></li>
+          <li><a href="#contact" class="mobile-nav-link">Contact</a></li>
+        </ul>
+        <a href="#software" class="btn btn-primary btn-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Download Software</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- 3. Hero Section -->
+    <section class="hero-section" id="hero">
+      <div class="container hero-container">
+        <div class="hero-content">
+          <h1 class="hero-title">
+            Network &amp; Web Scanner
+          </h1>
+          <p class="hero-description">
+            A simple and powerful cybersecurity tool designed to help users scan networks and web assets, identify
+            potential security issues, and better understand their security environment.
+          </p>
+          <p class="hero-subtext">
+            For University of Greenwich students — log in with your student email to perform your network and web scans.
+          </p>
+          <div class="hero-actions">
+            <a href="#software" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download Software</span>
+            </a>
+            <a href="#about" class="btn btn-secondary btn-lg">
+              <span>Learn More</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. About Section -->
+    <section class="section about-section" id="about">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">About Network &amp; Web Scanner</h2>
+          <p class="section-description">
+            Network &amp; Web Scanner is a cybersecurity utility designed to make network and web security scanning
+            easier. It provides users with useful information about their network and web environments so they can
+            identify potential issues and take appropriate security measures.
+          </p>
+        </div>
+
+        <!-- 3-card layout -->
+        <div class="about-grid">
+          <!-- Card 1 -->
+          <div class="clean-card">
+            <div class="card-icon-box">
+              <img src="assets/icons/network.svg" alt="Network Scanning Icon" width="26" height="26" />
+            </div>
+            <h3 class="card-title">Network Scanning</h3>
+            <p class="card-text">
+              Discover and inspect network resources.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="clean-card">
+            <div class="card-icon-box">
+              <img src="assets/icons/web.svg" alt="Web Scanning Icon" width="26" height="26" />
+            </div>
+            <h3 class="card-title">Web Scanning</h3>
+            <p class="card-text">
+              Analyze web assets for potential security issues.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="clean-card">
+            <div class="card-icon-box">
+              <img src="assets/icons/insights.svg" alt="Security Insights Icon" width="26" height="26" />
+            </div>
+            <h3 class="card-title">Security Insights</h3>
+            <p class="card-text">
+              Help users understand possible security risks.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Cyber Attacks / Solution Section -->
+    <section class="section solution-section" id="solution">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">
+            Cyber Attacks Are Increasing. The Solution Starts With Visibility.
+          </h2>
+          <p class="section-description">
+            Modern networks and web applications can contain vulnerabilities that are difficult to identify without the
+            right tools. Network &amp; Web Scanner provides a convenient way to inspect your environment and discover
+            potential security concerns.
+          </p>
+        </div>
+
+        <!-- Visual Flow: Scan → Detect → Understand → Secure -->
+        <div class="flow-container">
+          <div class="flow-step">
+            <div class="flow-icon-wrap">
+              <img src="assets/icons/scan.svg" alt="Scan Icon" width="22" height="22" />
+            </div>
+            <h4 class="flow-name">Scan</h4>
+          </div>
+
+          <div class="flow-arrow" aria-hidden="true">→</div>
+
+          <div class="flow-step">
+            <div class="flow-icon-wrap">
+              <img src="assets/icons/detect.svg" alt="Detect Icon" width="22" height="22" />
+            </div>
+            <h4 class="flow-name">Detect</h4>
+          </div>
+
+          <div class="flow-arrow" aria-hidden="true">→</div>
+
+          <div class="flow-step">
+            <div class="flow-icon-wrap">
+              <img src="assets/icons/understand.svg" alt="Understand Icon" width="22" height="22" />
+            </div>
+            <h4 class="flow-name">Understand</h4>
+          </div>
+
+          <div class="flow-arrow" aria-hidden="true">→</div>
+
+          <div class="flow-step">
+            <div class="flow-icon-wrap">
+              <img src="assets/icons/secure.svg" alt="Secure Icon" width="22" height="22" />
+            </div>
+            <h4 class="flow-name">Secure</h4>
+          </div>
+        </div>
+
+        <div class="solution-cta-wrap">
+          <a href="#software" class="btn btn-primary btn-lg">
+            <span>Start Scanning With Network &amp; Web Scanner</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Software Section -->
+    <section class="section software-section" id="software">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Network &amp; Web Scanner</h2>
+          <p class="section-description">
+            Download the desktop application and start exploring your network and web security environment.
+          </p>
+        </div>
+
+        <div class="download-wrapper">
+          <div class="download-card">
+            <div class="download-header">
+              <div class="software-badge">
+                <img src="assets/icons/windows.svg" alt="Windows Icon" width="14" height="14" />
+                <span>Windows Setup</span>
+              </div>
+            </div>
+
+            <h3 class="download-app-name">Network &amp; Web Scanner</h3>
+
+            <p class="download-auth-note">
+              <strong>Greenwich Student Access:</strong> Please log in with your official Greenwich student email
+              address to authenticate and start your scans.
+            </p>
+
+            <div class="download-grid">
+              <!-- Download Action Side -->
+              <div class="download-action-col">
+                <a href="./Network-Web-Scanner-Setup.exe" download="Network-Web-Scanner-Setup.exe"
+                  class="btn btn-primary btn-download" id="download-setup-btn">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download Setup</span>
+                </a>
+                <span class="download-subtext">Version 1.0.0 &bull; Standalone Desktop Setup</span>
+              </div>
+
+              <!-- System Preferences & Machine Config Side -->
+              <div class="system-specs-col">
+                <h4 class="specs-title">System Preferences &amp; Config</h4>
+                <div class="specs-list">
+                  <div class="spec-row">
+                    <span class="spec-name">Operating System</span>
+                    <span class="spec-value">Windows 10 / 11</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-name">System Architecture</span>
+                    <span class="spec-value">64-bit (x64)</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-name">Memory (RAM)</span>
+                    <span class="spec-value">4 GB min (8 GB rec.)</span>
+                  </div>
+                  <div class="spec-row">
+                    <span class="spec-name">Storage</span>
+                    <span class="spec-value">200 MB free space</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Contact Section -->
+    <section class="section contact-section" id="contact">
+      <div class="container">
+        <div class="contact-card">
+          <h2 class="contact-title">Need Help? Get In Touch.</h2>
+          <p class="contact-description">
+            If you face any problem while using Network &amp; Web Scanner, or if you have feedback or suggestions, we'd
+            love to hear from you.
+          </p>
+          <div class="contact-email-row">
+            <span class="email-text">Email:</span>
+            <a href="mailto:network.websanner@gmail.com" class="email-link">network.websanner@gmail.com</a>
+          </div>
+          <div class="contact-action">
+            <a href="mailto:network.websanner@gmail.com" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <span>Contact Us</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 8. Footer -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-brand-block">
+        <h3 class="footer-title">Network &amp; Web Scanner</h3>
+        <p class="footer-tagline">Cybersecurity scanning made simple.</p>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer Navigation">
+        <ul class="footer-links">
+          <li><a href="#about">About</a></li>
+          <li><a href="#software">Software</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#software">Download</a></li>
+        </ul>
+      </nav>
+
+      <div class="footer-bottom">
+        <p class="copyright-text">&copy; 2026 Network &amp; Web Scanner. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+
+</html>
